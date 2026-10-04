@@ -1,0 +1,78 @@
+/* pages-admin.js — settings, notifications, user accounts, audit log */
+(function (G) {
+  'use strict';
+  const C = G.C, S = G.S, UI = G.UI, esc = C.esc, App = G.App, H = G.H;
+  const Pages = G.Pages = G.Pages || {};
+  const NLAB = { absent: ['Student absent', 'Sent when a class teacher marks a student absent'], marks: ['Marks published', 'Sent when the Dean approves a mark sheet'], examReminder: ['Exam reminders', 'Schedule published / upcoming examination'], feeDue: ['Fee due reminders', 'Reminders for pending and overdue instalments'], feePaid: ['Fee payment confirmation', 'Sent immediately after a payment is recorded'], holiday: ['School holiday', 'Holiday added to the calendar'], emergency: ['Emergency announcement', 'Emergency information broadcast'], ptm: ['Parent meeting', 'Parent–teacher meeting notices'], notice: ['Important school notice', 'General notices and events'] };
+  const switchHtml = (k, on, attr) => `<label class="switch"><input type="checkbox" ${on ? 'checked' : ''} data-on="${attr}" data-k="${k}"><span></span></label>`;
+
+  /* ---------- Settings ---------- */
+  Pages.settings = {
+    roles: ['principal', 'admin'],
+    render(ctx) {
+      const u = ctx.u, db = S.db(), st = db.settings; const adm = u.role === 'admin';
+      const tabs = [['rules', 'School rules'], ['notify', 'WhatsApp notifications'], ['enq', 'Admission enquiries', db.enquiries.filter(e => e.status === 'New').length]]; if (adm) tabs.push(['roles', 'Roles & permissions'], ['data', 'Data & backup']);
+      const tab = App.tab('settings', 'rules'); let body = '';
+      if (tab === 'rules') body = `<div class="grid g2">${UI.card('Fees & examinations', `<div class="setting"><div><b>Block hall tickets for overdue fees</b><small>When ON, the Dean cannot issue hall tickets to students with overdue fees, and parents see a hold notice.</small></div>${switchHtml('hallTicketRequiresFees', st.hallTicketRequiresFees, 'setRule')}</div><div class="setting"><div><b>Allow online fee payments</b><small>Parents can pay through the portal. Receipts and confirmations are automatic.</small></div>${switchHtml('onlinePayments', st.onlinePayments, 'setRule')}</div><div class="setting"><div><b>Examination centre (hall ticket)</b><small>Printed on every hall ticket</small></div><input class="input sm" style="max-width:260px" value="${esc(st.examCentre)}" data-on="setCentre"></div>`)}${UI.card('Academic configuration', UI.dl([['Academic year', db.ay], ['Working days', 'Monday – Saturday'], ['Periods per day', '7 (+ short break & lunch)'], ['Grading scale', esc(st.gradingScale)], ['Fee instalments', st.termDates.map((d, i) => 'T' + (i + 1) + ': ' + C.fmtDate(d)).join(' · ')], ['School', esc(C.SCHOOL.name)]]) + `<div class="hint mt-s">Contact the system administrator to change structural settings such as the academic year.</div>`)}</div>`;
+      if (tab === 'notify') body = `<div class="alert info mb">${UI.icon('wa', 16)}<div>Parent WhatsApp numbers come from each student profile. In this build messages are <b>simulated and logged</b>; connect the WhatsApp Business Cloud API gateway in production to deliver them.</div></div>` + UI.card('WhatsApp notifications', `<div class="setting"><div><b>Enable WhatsApp notifications</b><small>Master switch for all parent alerts</small></div>${switchHtml('whatsappEnabled', st.whatsappEnabled, 'setWA')}</div>${Object.entries(NLAB).map(([k, [l, d]]) => `<div class="setting"><div><b>${l}</b><small>${d}</small></div>${switchHtml(k, st.notify[k], 'setNotify')}</div>`).join('')}`, { actions: '<a class="btn sm" href="#/notifylog">Notification history</a>' });
+      if (tab === 'enq') body = UI.card('Admission enquiries from the website', UI.table([{ h: 'Received', f: e => C.fmtStamp(e.ts) }, { h: 'Child', f: e => `<b>${esc(e.child)}</b><div class="muted small">${esc(e.grade)}</div>` }, { h: 'Parent', f: e => esc(e.parent) }, { h: 'Contact', f: e => `${C.phone(e.phone)}<div class="muted small">${esc(e.email)}</div>` }, { h: 'Message', f: e => esc(e.message) }, { h: 'Status', f: e => UI.status(e.status) }, { h: '', f: e => e.status === 'New' ? UI.btn('Mark contacted', 'enqDone', { cls: 'xs', data: { id: e.id } }) : '' }], db.enquiries.slice().reverse(), { empty: 'No enquiries yet' }), { flush: true });
+      if (tab === 'roles') body = rolesMatrix();
+      if (tab === 'data') body = UI.card('Demo data & backup', `<div class="grid g3"><div class="note-row"><b>Export backup</b><div class="small muted mb">Download the full school database as JSON.</div>${UI.btn('Download backup', 'dlBackup', { cls: 'sm', icon: 'download' })}</div><div class="note-row"><b>Reset to demo data</b><div class="small muted mb">Re-creates all sample students, teachers, fees and records. All changes are lost.</div>${UI.btn('Reset demo data', 'resetData', { cls: 'sm danger', icon: 'refresh' })}</div><div class="note-row"><b>Storage</b><div class="small muted">Data is stored in this browser (localStorage), about ${Math.round(JSON.stringify(db).length / 1024)} KB. A production deployment uses a secure server database.</div></div></div>`);
+      return UI.head({ title: adm ? 'System settings' : 'Settings', sub: 'School rules, notification controls and administration.', actions: UI.link('Audit logs', '#/audit', { icon: 'shield' }) + UI.link('Notification history', '#/notifylog', { icon: 'wa' }) }) + App.tabs('settings', tabs, tab) + body;
+    }
+  };
+  UI.on.setRule = t => { S.updateSettings({ [t.dataset.k]: t.checked }, { hallTicketRequiresFees: 'Hall-ticket fee rule', onlinePayments: 'Online payments' }[t.dataset.k]); UI.toast('Setting updated', 'ok'); };
+  UI.on.setCentre = t => { if (t.value.trim()) S.updateSettings({ examCentre: t.value.trim() }, 'Examination centre'); };
+  UI.on.setWA = t => { S.updateSettings({ whatsappEnabled: t.checked }, 'WhatsApp master switch'); UI.toast('WhatsApp notifications ' + (t.checked ? 'enabled' : 'paused'), 'ok'); };
+  UI.on.setNotify = t => { const n = Object.assign({}, S.db().settings.notify, { [t.dataset.k]: t.checked }); S.updateSettings({ notify: n }, 'Notification: ' + NLAB[t.dataset.k][0] + ' → ' + (t.checked ? 'on' : 'off')); UI.toast(NLAB[t.dataset.k][0] + ': ' + (t.checked ? 'enabled' : 'disabled'), 'ok'); };
+  UI.act.enqDone = t => { S.db().enquiries.find(e => e.id === t.dataset.id).status = 'Contacted'; S.save(); App.refresh(); };
+  UI.act.dlBackup = () => UI.download('rainbows_backup_' + C.today() + '.json', JSON.stringify(S.db()), 'application/json');
+  UI.act.resetData = () => UI.confirm('Reset all data?', 'Every record will be replaced with fresh demo data. You will be signed out.', 'Reset everything', () => { S.reset(); S.logout(); location.hash = ''; location.reload(); }, true);
+  function rolesMatrix() {
+    const R = ['principal', 'dean', 'accountant', 'teacher', 'parent', 'student', 'ops', 'admin']; const rows = [['School dashboard & analytics', '1000000'.split('')], ['Student records (full)', '1000000'.split('')], ['Student records – own class / own child', '1001110'.split('')], ['Student fee details', '10100100'.split('')], ['Attendance – mark', '00010000'.split('')], ['Attendance – analytics', '11000000'.split('')], ['Timetable – edit', '01000000'.split('')], ['Exams – create / hall tickets', '01000000'.split('')], ['Marks – enter', '00010000'.split('')], ['Marks – approve & publish', '01000000'.split('')], ['Fee collection & receipts', '10100000'.split('')], ['Payroll – all staff', '10100000'.split('')], ['Payroll – own salary', '00010000'.split('')], ['Operations & cleaning tasks', '10000010'.split('')], ['Report maintenance issue', '11010000'.split('')], ['Audit logs', '10000001'.split('')], ['User accounts & settings', '00000001'.split('')]];
+    const mark = v => v === '1' ? `<span style="color:var(--ok)">${UI.icon('check', 16)}</span>` : '<span class="muted">—</span>';
+    return UI.card('Role-based access matrix', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Capability</th>${R.map(r => `<th class="center">${C.ROLES[r].replace(' of Academics', '').replace(' Staff', '').replace('System ', '')}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr><td>${r[0]}</td>${R.map((x, i) => `<td class="center">${mark(r[1][i] || '0')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`, { flush: true, sub: 'Enforced on every page, search result and data query. Parents and students only ever see their own child.' });
+  }
+
+  /* ---------- Notification history ---------- */
+  Pages.notifylog = {
+    roles: ['admin', 'principal'],
+    render() {
+      const types = Array.from(new Set(S.db().notifications.map(n => n.type)));
+      return UI.head({ title: 'Notification history', sub: 'Every WhatsApp message triggered by the system.' }) + UI.listView({ id: 'notif', csv: 'notifications', print: true, pageSize: 12, source: () => S.db().notifications.slice().reverse(),
+        filters: [{ k: 'q', type: 'search', label: 'Search', ph: 'Parent, phone or message text' }, { k: 't', type: 'select', label: 'Type', options: [['', 'All types']].concat(types) }, { k: 's', type: 'select', label: 'Status', options: [['', 'All'], 'Delivered', 'Not sent (disabled)'] }],
+        filter: (n, f) => (!f.t || n.type === f.t) && (!f.s || n.status === f.s) && (!f.q || (n.to + n.phone + n.message).toLowerCase().includes(f.q.toLowerCase())),
+        cols: [{ h: 'Sent', f: n => C.fmtStamp(n.ts), csv: n => n.ts }, { h: 'Type', f: n => UI.badge(n.type, 'navy') }, { h: 'Recipient', f: n => `<b>${esc(n.to)}</b><div class="muted small">${n.phone ? C.phone(n.phone) : ''}</div>`, csv: n => n.to + ' ' + n.phone }, { h: 'Message', f: n => `<div class="small" style="max-width:420px">${esc(n.message)}</div>`, csv: n => n.message }, { h: 'Triggered by', f: n => esc(n.by) || 'System' }, { h: 'Status', f: n => UI.status(n.status), csv: n => n.status }] });
+    }
+  };
+
+  /* ---------- Audit log ---------- */
+  Pages.audit = {
+    roles: ['admin', 'principal'],
+    render() {
+      const acts = Array.from(new Set(S.db().audit.map(a => a.action))).sort();
+      return UI.head({ title: 'Audit logs', sub: 'Accountability trail for marks, attendance, payments, student details, timetables, hall tickets and salaries.' }) + UI.listView({ id: 'audit', csv: 'audit_log', print: true, pageSize: 14, source: () => S.db().audit.slice().reverse(),
+        filters: [{ k: 'q', type: 'search', label: 'Search', ph: 'User, entity or value' }, { k: 'a', type: 'select', label: 'Action', options: [['', 'All actions']].concat(acts) }, { k: 'from', type: 'date', label: 'From' }, { k: 'to', type: 'date', label: 'To' }],
+        filter: (a, f) => (!f.a || a.action === f.a) && (!f.from || a.ts.slice(0, 10) >= f.from) && (!f.to || a.ts.slice(0, 10) <= f.to) && (!f.q || (a.user + a.entity + a.prev + a.next + a.action).toLowerCase().includes(f.q.toLowerCase())),
+        cols: [{ h: 'Date', f: a => C.fmtDate(a.ts), csv: a => a.ts.slice(0, 10) }, { h: 'Time', f: a => C.fmtTime(a.ts), csv: a => a.ts.slice(11, 19) }, { h: 'User', f: a => `<b>${esc(a.user)}</b><div class="muted tiny">${esc(C.ROLES[a.role] || a.role)}</div>`, csv: a => a.user + ' (' + a.role + ')' }, { h: 'Action', f: a => `<b>${esc(a.action)}</b>`, csv: a => a.action }, { h: 'Record', f: a => esc(a.entity), csv: a => a.entity }, { h: 'Previous value', f: a => a.prev ? `<span class="small muted">${esc(a.prev)}</span>` : '—', csv: a => a.prev }, { h: 'New value', f: a => a.next ? `<span class="small">${esc(a.next)}</span>` : '—', csv: a => a.next }] });
+    }
+  };
+
+  /* ---------- User accounts ---------- */
+  Pages.accounts = {
+    roles: ['admin'],
+    render() {
+      const db = S.db();
+      const rows = () => db.users.map(x => { let nm = '', sub = ''; if (x.role === 'student') { const s = S.student(x.ref); nm = s.name; sub = S.className(s.classId); } else if (x.role === 'parent') { nm = S.parent(S.student(x.ref).parentId).name; sub = 'Parent of ' + S.student(x.ref).name; } else { const e = S.emp(x.ref); nm = e.name; sub = e.designation; } return { x, nm, sub }; });
+      return UI.head({ title: 'User accounts', sub: 'Create, disable and reset credentials. Passwords are never displayed.', actions: UI.btn('Create staff account', 'newUser', { cls: 'primary', icon: 'plus' }) }) + UI.listView({ id: 'accounts', csv: 'accounts', pageSize: 14, source: rows,
+        filters: [{ k: 'q', type: 'search', label: 'Search', ph: 'Username or name' }, { k: 'r', type: 'select', label: 'Role', options: [['', 'All roles']].concat(Object.entries(C.ROLES)) }, { k: 's', type: 'select', label: 'Status', options: [['', 'All'], ['1', 'Active'], ['0', 'Disabled']] }],
+        filter: (r, f) => (!f.r || r.x.role === f.r) && (!f.s || (f.s === '1') === r.x.active) && (!f.q || (r.x.username + r.nm).toLowerCase().includes(f.q.toLowerCase())),
+        cols: [{ h: 'User', f: r => UI.person(r.nm, r.sub, r.nm.length), csv: r => r.nm }, { h: 'Username', f: r => `<code>${esc(r.x.username)}</code>`, csv: r => r.x.username }, { h: 'Role', f: r => UI.badge(C.ROLES[r.x.role], 'navy'), csv: r => r.x.role }, { h: 'Status', f: r => UI.status(r.x.active ? 'Active' : 'Disabled'), csv: r => r.x.active ? 'Active' : 'Disabled' }, { h: '', csv: false, f: r => `<div class="row">${UI.btn('Reset password', 'resetPw', { cls: 'xs', icon: 'lock', data: { u: r.x.username } })}${UI.btn(r.x.active ? 'Disable' : 'Enable', 'toggleUser', { cls: 'xs ' + (r.x.active ? 'danger' : ''), data: { u: r.x.username } })}</div>` }] });
+    }
+  };
+  UI.act.toggleUserAcc = null;
+  UI.act.resetPw = t => UI.modal({ title: 'Reset password · ' + t.dataset.u, size: 'sm', body: UI.field('New password', '<input class="input" id="npw" type="text" minlength="8" placeholder="At least 8 characters">', { hint: 'Share it with the user securely; they should change it after login.' }), footer: '<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" id="npwGo">Reset</button>', onMount: el => el.querySelector('#npwGo').onclick = () => { const v = document.getElementById('npw').value; if (v.length < 8) { UI.toast('Password must be at least 8 characters', 'bad'); return; } S.resetPassword(t.dataset.u, v); UI.closeModal(); UI.toast('Password reset', 'ok'); } });
+  UI.act.toggleUser = t => { const u = S.db().users.find(x => x.username === t.dataset.u); if (u.username === App.u.username) { UI.toast('You cannot disable your own account', 'bad'); return; } S.setUserActive(u.username, !u.active); UI.toast('Account ' + (u.active ? 'enabled' : 'disabled'), 'ok'); App.refresh(); };
+  UI.act.newUser = () => { const have = new Set(S.db().users.filter(u => !['student', 'parent'].includes(u.role)).map(u => u.ref)); const emps = S.employees(); UI.modal({ title: 'Create staff account', size: 'sm', body: `<form id="nuForm" class="col" style="gap:14px">${UI.field('Employee', UI.select('ref', emps.map(e => [e.id, e.name + ' – ' + e.designation + (have.has(e.id) ? ' (has account)' : '')])))}${UI.field('Username', UI.input('username', '', 'required'))}${UI.field('Initial password', UI.input('password', '', 'required minlength="8"'))}</form>`, footer: '<button class="btn" data-act="closeModal">Cancel</button><button class="btn primary" data-act="saveUser">Create</button>' }); };
+  UI.act.saveUser = () => { const f = document.getElementById('nuForm'); if (!f.reportValidity()) return; const d = UI.formData(f); const e = S.emp(d.ref); const r = S.addUser({ username: d.username.trim(), password: d.password, role: e.role, ref: e.id }); if (r.error) { UI.toast(r.error, 'bad'); return; } UI.closeModal(); UI.toast('Account created for ' + e.name, 'ok'); App.refresh(); };
+})(window);
