@@ -299,3 +299,69 @@ h1, h2, h3, h4 { font-family: var(--font); letter-spacing: 0; }
 .sched .it { grid-template-columns: 128px 1fr auto; padding: 10px 16px; } .sched .tm { white-space: nowrap; }
 @media (max-width: 640px) { .sched .it { grid-template-columns: 112px 1fr; } }
 .tabs { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; } .tabs::-webkit-scrollbar { display: none; }
+
+/* =====================================================================
+   MOBILE — tables become cards, touch-friendly attendance & marks, day-wise timetable
+   ===================================================================== */
+.tt-mobile { display: none; }
+.day-pills { display: flex; gap: 6px; padding: 12px; overflow-x: auto; border-bottom: 1px solid var(--line-2); scrollbar-width: none; } .day-pills::-webkit-scrollbar { display: none; }
+.day-pills button { flex: 1 0 auto; min-width: 50px; position: relative; border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 9px 4px; font-weight: 600; color: var(--text-2); font-size: 13px; } .day-pills button.on { background: var(--navy-800); border-color: var(--navy-800); color: #fff; } .day-pills button i { position: absolute; top: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--pink); }
+.tt-row { display: grid; grid-template-columns: 62px 1fr; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--line-2); align-items: start; } .tt-row .tm { font-size: 11.5px; color: var(--muted); line-height: 1.35; } .tt-row .tm b { display: block; color: var(--navy-900); font-size: 13px; }
+.tt-row.now { background: #fff8e7; box-shadow: inset 3px 0 var(--amber, #f2a516); } .tt-row.warn { background: #fdecea; } .tt-row .cell b { font-size: 14px; } .tt-row .cell span { font-size: 12.5px; }
+.tt-brk { text-align: center; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: #f5f7fb; padding: 5px; }
+@media (max-width: 760px) { .tt-wrap { display: none; } .tt-mobile { display: block; } }
+
+@media (max-width: 640px) {
+  .main { padding: 14px 12px 28px; } .page-head { margin-bottom: 12px; } .page-head h1 { font-size: 19px; } .dash-head h1 { font-size: 19px; }
+  .card-h { padding: 11px 14px; } .card-b { padding: 14px; } .grid { gap: 10px; } .mt { margin-top: 12px; }
+  .filters { padding: 12px 14px; gap: 8px; } .filters .field { min-width: 100%; flex: 1 1 100%; }
+  .pager { padding: 10px 12px; justify-content: center; }
+  .page-actions .btn { flex: 1 1 calc(50% - 8px); justify-content: center; }
+  .input, select.input { font-size: 16px; } .input.sm { height: 40px; } .btn { height: 40px; } .btn.sm { height: 36px; } .btn.xs { height: 32px; padding: 0 12px; }
+  .tabs button, .tabs a { padding: 11px 13px; }
+  .kpi { padding: 10px 12px; } .kpi .lbl { font-size: 10.5px; } .kpi .val { font-size: 18px; }
+  .modal-b { padding: 16px; } .modal-f { flex-wrap: wrap; } .modal-f .btn { flex: 1; justify-content: center; }
+  .toasts { left: 10px; right: 10px; bottom: 74px; max-width: none; }
+  .dl { grid-template-columns: 1fr; gap: 2px 0; } .dl dt { margin-top: 8px; font-size: 12px; }
+  .sticky-bar { padding: 10px 12px; } .sticky-bar .btn { width: 100%; justify-content: center; }
+  .app.fam .sticky-bar { bottom: 62px; }
+
+  /* tables -> cards */
+  .tbl.stack { display: block; } .tbl.stack thead { display: none; } .tbl.stack tbody, .tbl.stack tfoot { display: block; }
+  .tbl.stack tr { display: block; margin: 10px 12px; padding: 4px 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .tbl.stack tfoot tr { background: #f7f9fc; }
+  .tbl.stack td { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 6px 12px; border: 0; text-align: right; font-size: 13.5px; }
+  .tbl.stack td::before { content: attr(data-label); flex: none; max-width: 42%; text-align: left; color: var(--muted); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .tbl.stack td:first-child { display: block; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line-2); margin-bottom: 2px; font-weight: 600; } .tbl.stack td:first-child::before { display: none; }
+  .tbl.stack td[data-label=""]::before { display: none; } .tbl.stack td[data-label=""] { justify-content: flex-end; }
+  .tbl.stack td > .person, .tbl.stack td .progress { text-align: left; } .tbl.stack td[colspan] { display: block; text-align: center; } .tbl.stack td[colspan]::before { display: none; }
+  .tbl.stack tr.click:active { background: var(--navy-50); }
+  .tbl-wrap { overflow-x: visible; }
+
+  /* attendance register: one card per student with large P / A / L / Leave buttons */
+  #attForm .tbl, #attForm tbody { display: block; } #attForm thead { display: none; }
+  #attForm tr { display: block; margin: 0; padding: 12px 14px; border-bottom: 1px solid var(--line-2); }
+  #attForm td { display: block; padding: 3px 0; border: 0; } #attForm td:first-child { display: none; }
+  #attForm .seg { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; margin: 6px 0 2px; } #attForm .seg span { text-align: center; padding: 10px 0; font-size: 13px; }
+  #attForm .input { height: 38px; }
+
+  /* marks sheet */
+  #markForm .tbl, #markForm tbody { display: block; } #markForm thead { display: none; }
+  #markForm tr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin: 0; padding: 12px 14px; border-bottom: 1px solid var(--line-2); }
+  #markForm td { display: block; padding: 0; border: 0; text-align: left; } #markForm td:first-child { display: none; }
+  #markForm td:nth-child(2) { grid-column: 1 / -1; } #markForm td:nth-child(3) { grid-column: 1 / -1; color: var(--muted); font-size: 12px; margin-top: -2px; }
+  #markForm td:nth-child(4) { font-size: 12px; color: var(--muted); align-self: end; } #markForm td:nth-child(4)::before { content: 'Out of '; }
+  #markForm td:nth-child(5) .input { width: 100% !important; height: 42px; font-size: 18px; text-align: left; } #markForm td:nth-child(6) { align-self: center; font-weight: 600; } #markForm td:nth-child(6)::before { content: 'Grade '; color: var(--muted); font-weight: 400; }
+  #markForm td:nth-child(7) { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) { .sched .it { grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 14px; } .sched .tm { grid-column: 1 / -1; font-size: 12px; } .sched .tm b { display: inline; margin-right: 8px; } .sched .it > :nth-child(3) { grid-row: 2; grid-column: 2; } }
+@media (max-width: 640px) { .filters .field { min-width: 0; flex: 1 1 calc(50% - 8px); } .filters .field.search { flex-basis: 100%; } .filters { align-items: flex-end; } .card-h .row .btn.sm { height: 34px; } }
+@media (max-width: 640px) { .grid:has(> .kpi) { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid:has(> .kpi) .kpi .val { font-size: 17px; } .grid:has(> .stat) { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .tbl-wrap { overflow-x: auto; } .tbl-wrap:has(.tbl.stack) { overflow-x: visible; } }
+@media (max-width: 640px) {
+  #markForm tr { grid-template-columns: 1fr auto; gap: 6px 12px; }
+  #markForm td:nth-child(2) { grid-column: 1; grid-row: 1; } #markForm td:nth-child(6) { grid-column: 2; grid-row: 1; align-self: center; background: var(--navy-50); border-radius: 4px; padding: 3px 10px; }
+  #markForm td:nth-child(3) { grid-column: 1 / -1; grid-row: 2; } #markForm td:nth-child(4) { display: none; }
+  #markForm td:nth-child(5) { grid-column: 1 / -1; grid-row: 3; } #markForm td:nth-child(5) .input { text-align: left; }
+  #markForm td:nth-child(7) { grid-column: 1 / -1; grid-row: 4; }
+}

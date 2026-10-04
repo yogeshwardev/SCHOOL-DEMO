@@ -96,7 +96,7 @@
   };
 
   /* ---------- tables & list views ---------- */
-  UI.table = (cols, rows, o = {}) => `<div class="tbl-wrap"><table class="tbl"><thead><tr>${cols.map(c => `<th class="${c.cls || ''}" ${c.w ? `style="width:${c.w}"` : ''}>${c.h}</th>`).join('')}</tr></thead><tbody>${rows.length ? rows.map(r => `<tr ${o.href && o.href(r) ? `class="click" data-href="${o.href(r)}"` : ''}>${cols.map(c => `<td class="${c.cls || ''}">${c.f(r)}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}">${UI.empty(o.empty || 'No records found', o.emptySub || 'Try changing the filters.')}</td></tr>`}</tbody>${o.foot ? `<tfoot><tr>${o.foot}</tr></tfoot>` : ''}</table></div>`;
+  UI.table = (cols, rows, o = {}) => { const lab = cols.map(c => esc(String(c.h).replace(/<[^>]+>/g, ''))); return `<div class="tbl-wrap"><table class="tbl ${o.scroll ? '' : 'stack'}"><thead><tr>${cols.map(c => `<th class="${c.cls || ''}" ${c.w ? `style="width:${c.w}"` : ''}>${c.h}</th>`).join('')}</tr></thead><tbody>${rows.length ? rows.map(r => `<tr ${o.href && o.href(r) ? `class="click" data-href="${o.href(r)}"` : ''}>${cols.map((c, i) => `<td class="${c.cls || ''}" data-label="${lab[i]}">${c.f(r)}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}">${UI.empty(o.empty || 'No records found', o.emptySub || 'Try changing the filters.')}</td></tr>`}</tbody>${o.foot ? `<tfoot><tr>${o.foot}</tr></tfoot>` : ''}</table></div>`; };
   UI.listView = def => {
     const id = def.id; const prev = UI.lv[id]; UI.lv[id] = { def, f: prev ? prev.f : Object.assign({}, def.init || {}), page: 1 };
     const st = UI.lv[id];

@@ -80,3 +80,12 @@ footer .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.3fr; gap: 4
 @media (max-width: 640px) { .sec { padding: 52px 0; } .g2, .g3, .g4, .steps, .role-cards, .values { grid-template-columns: 1fr; } .gal { grid-template-columns: repeat(2, 1fr); } .mosaic { grid-auto-rows: 150px; } .form .row2 { grid-template-columns: 1fr; } footer .cols { grid-template-columns: 1fr; } .brand img { height: 48px; } .nav-cta .btn.primary { display: none; } .brand .nm b { font-size: 17px; } .brand .nm span { font-size: 11.5px; } header.site .wrap { height: 74px; } .hero { min-height: 480px; } .hero .wrap { padding: 60px 0 100px; } .util .l span:nth-child(3) { display: none; } .facts .box { grid-template-columns: 1fr; } .fact { border-right: 0; padding: 18px; } .lead-card { flex-direction: column; align-items: flex-start; } }
 @media (max-width: 640px) { .util .l span:nth-child(1), .util .l span:nth-child(3) { display: none; } .util .wrap { padding: 6px 0; } }
 @media (max-width: 480px) { .nav-cta .btn { display: none; } .brand img { height: 42px; } .brand .nm b { font-size: 16px; } .brand .nm span { font-size: 11px; } header.site .wrap { height: 68px; gap: 8px; } nav.main.open { top: 68px; } .hero h1 { font-size: 32px; } .page-hero { padding: 52px 0 44px; } }
+@media (max-width: 640px) {
+  .util .wrap { flex-wrap: nowrap; justify-content: space-between; } .util { font-size: 12.5px; } .util .l { gap: 0; }
+  .facts { margin-top: -40px; } .facts .box { grid-template-columns: 1fr 1fr; } .fact { padding: 14px 12px; gap: 10px; flex-direction: column; align-items: flex-start; border-bottom: 1px solid var(--line); } .fact:nth-child(odd) { border-right: 1px solid var(--line); } .fact:nth-child(n+3) { border-bottom: 0; } .fact .ico { width: 36px; height: 36px; } .fact b { font-size: 16px; } .fact span { font-size: 12.5px; }
+  .hero .cta .btn { padding: 11px 18px; font-size: 14px; } .hero p.lead { font-size: 16px; }
+  .sec-head h2 { font-size: 24px; } .sec-head { margin-bottom: 26px; } .card .pad { padding: 18px; }
+  .val { padding: 18px; } .val i { font-size: 30px; } .steps { gap: 12px; } .list-row { gap: 12px; } .datebox { width: 52px; }
+  .btn { padding: 11px 20px; } .map { aspect-ratio: 4/3; } .split { gap: 22px; } .photo img { aspect-ratio: 16/10; }
+  footer.site { padding-top: 40px; } footer .cols { gap: 26px; }
+}
