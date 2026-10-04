@@ -54,7 +54,7 @@
   UI.wa = (msg) => `<div class="wa-bubble">${esc(msg)}</div>`;
 
   /* ---------- charts (self-contained SVG) ---------- */
-  const PAL = ['#1d4690', '#e0245e', '#1b9e8c', '#d6334a', '#7a5198', '#1eaaf1'];
+  const PAL = ['#1d4690', '#6b8fd1', '#2f855a', '#c0392b', '#8a97ad', '#d69e2e'];
   UI.PAL = PAL;
   const nice = m => { if (m <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(m))), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; };
   const legend = s => s.length > 1 || s[0].name ? `<div class="legend">${s.map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)}</span>`).join('')}</div>` : '';
