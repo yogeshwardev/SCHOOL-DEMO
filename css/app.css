@@ -415,3 +415,34 @@ body { background-color: #eff6fc; background-image: radial-gradient(900px 420px 
   .login-top .logo-chip { box-shadow: 0 4px 12px rgba(20,41,94,.12); }
   .login-box { padding: 26px 18px 40px; margin: 0 auto; }
 }
+
+/* =====================================================================
+   FINAL THEME — restrained navy / white / crimson (matches the website)
+   ===================================================================== */
+:root { --font: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; --serif: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --navy-950: #0b1f4a; --navy-900: #12306b; --navy-800: #12306b; --navy-700: #1d4690; --navy-600: #2d5bb0; --navy-100: #e4eaf5; --navy-50: #f1f4fa; --gold: #c8102e;
+  --bg: #f3f5f8; --line: #dfe3ea; --line-2: #e8ebf1; --radius: 6px; --shadow: 0 1px 2px rgba(15, 30, 70, .06); }
+body { background: #f3f5f8; background-image: none; font-size: 14.5px; }
+h1, h2, h3, h4 { font-family: var(--font); }
+.sidebar { background: #12306b; } .nav a.active { background: rgba(255, 255, 255, .14); } .nav a.active::before { background: #ff8a9a; } .nav-label { color: #9db2dc; } .nav a .cnt { background: #c8102e; }
+.topbar { border-image: none; border-top: 0; border-bottom: 1px solid var(--line); box-shadow: none; height: 58px; }
+.card { border-radius: 6px; box-shadow: var(--shadow); border-color: var(--line); } .card-h { background: #f8f9fb; border-radius: 6px 6px 0 0; } .card-h h3 { font-size: 14px; color: #12306b; font-family: var(--font); }
+.btn { border-radius: 4px; } .btn.primary { background: #12306b; border-color: #12306b; } .btn.primary:hover { background: #0b1f4a; } .btn.gold { background: #c8102e; border-color: #c8102e; }
+.input, select.input, textarea.input { border-radius: 4px; } .filters { background: #f8f9fb; border-radius: 6px 6px 0 0; }
+.badge { border-radius: 3px; padding: 1px 8px; } .tbl th { background: #f1f4f9; color: #4b5b78; }
+.tabs button.on, .tabs .on { border-color: #c8102e; color: #12306b; } .pill-tabs { background: #e8ecf3; border-radius: 4px; } .pill-tabs button { border-radius: 3px; }
+.kpi { border-radius: 6px; border-top: 3px solid #12306b; } .grid > .kpi:nth-child(n) { --kc: #12306b; } .kpi .val { font-family: var(--font); font-weight: 700; color: #12306b; }
+.welcome { background: #fff; border: 1px solid var(--line); border-left: 4px solid #c8102e; border-radius: 6px; } .welcome h2 { color: #12306b; }
+.note-line { border-radius: 4px; border-left-color: #12306b; box-shadow: var(--shadow); }
+.tasks-line { border-radius: 6px; box-shadow: var(--shadow); } .tasks-line a { border-radius: 3px; background: #f1f4fa; } .tasks-line b { color: #c8102e; }
+.alert { border-radius: 4px; box-shadow: var(--shadow); }
+.qt { border-radius: 6px; box-shadow: var(--shadow); } .qt:hover { box-shadow: 0 4px 14px rgba(15, 30, 70, .1); } .quick-grid .qt:nth-child(n) { --qc: #12306b; } .qi { border-radius: 8px; background: #12306b !important; }
+.card.stat { border-top: 3px solid #12306b; } .grid > .card.stat:nth-child(n) { border-top-color: #12306b; }
+.child-pick { background: #fff; border: 1px solid var(--line); box-shadow: none; border-radius: 4px; } .modal { border-radius: 8px; }
+.page-head h1, .dash-head h1 { font-family: var(--font); color: #12306b; font-size: 22px; font-weight: 700; }
+.stat .big, .card-h h3, .kpi .val { font-family: var(--font); }
+/* sign in */
+.login-art { background: linear-gradient(rgba(11, 31, 74, .86), rgba(11, 31, 74, .92)), url(../images/bg_00.jpg) center/cover !important; color: #dbe5f7; }
+.login-art::before { display: none; } .login-art h1 { color: #fff !important; font-family: 'Merriweather', Georgia, serif; font-size: 34px; } .login-art p, .login-art div, .login-art a { color: #dbe5f7 !important; } .login-art b { color: #fff !important; } .login-art a[href="index.html"] { color: #ffb3c0 !important; }
+.login-box h2 { color: #12306b; font-family: 'Merriweather', Georgia, serif; font-size: 28px; } .how div { background: #f1f4fa; border-radius: 4px; } .btn.primary.lg { background: #12306b; box-shadow: none; }
+@media (max-width: 960px) { .login-top { background: #12306b; border-image: none; border-bottom: 4px solid #c8102e; } .login-top b { color: #fff; font-family: 'Merriweather', Georgia, serif; font-size: 16px; } .login-top span:not(.logo-chip) { color: #c7d3ea; } }
